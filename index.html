@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <script defer src="script.js"></script>
+</head>
+
+<body>
+    <p>
+        You can execute any Python Code.
+        Enter something within the box given below and execute it using run.
+    </p>
+
+    <div>
+        <textarea id="code" placeholder="Type your code here..."></textarea>
+        <button id="run-button">Run</button>
+    </div>
+
+    <div>
+    </div>
+
+    <div>
+        Output:
+        <div>
+            <textarea disabled id="output"></textarea>
+        </div>
+    </div>
+</body>
+
+</html>
