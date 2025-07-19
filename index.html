@@ -1,37 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+    
+    <title>WebRunnr</title>
+    
     <link rel="stylesheet" href="style.css">
-
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <script defer src="script.js"></script>
 </head>
-
 <body>
-    <p>
-        You can execute any Python Code.
-        Enter something within the box given below and execute it using run.
-    </p>
+    <div class="container">
+        <h1>WebRunnr</h1>
+        <p>Type and execute Python Code below. Use async functions for blocking code.</p>
 
-    <div>
         <textarea id="code" placeholder="Type your code here..."></textarea>
-        <button id="run-button">Run</button>
+        <button id="run-button" disabled>Loading Pyodide...</button>
+
+        <h2>Output</h2>
+        <textarea id="output" readonly placeholder="Output will appear here..."></textarea>
     </div>
 
-    <div>
-    </div>
-
-    <div>
-        Output:
-        <div>
-            <textarea disabled id="output"></textarea>
-        </div>
-    </div>
 </body>
-
 </html>

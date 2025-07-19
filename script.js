@@ -1,51 +1,52 @@
-const outputEl = document.getElementById("output");
-const codeEl = document.getElementById("code");
-const runBtn = document.getElementById("run-button");
+const codeEl = document.getElementById('code');
+const outputEl = document.getElementById('output');
+const runBtn = document.getElementById('run-button');
 
-function addToOutput(s) {
-    outputEl.value += s + "\n";
-}
+const pyodideWorker = new Worker('./worker.js', { type: 'module' });
 
-outputEl.value = "Initializing...\n";
+pyodideWorker.onmessage = (event) => {
+    const { type, data, prompt } = event.data;
 
-let pyodideReadyPromise = loadPyodide().then(async (pyodide) => {
-    // Redirect stdout/stderr
-    pyodide.setStdout({
-        batched: (s) => addToOutput(s)
-    });
-    pyodide.setStderr({
-        batched: (s) => addToOutput("Error: " + s)
-    });
+    switch (type) {
+        case 'input_request':
+            const userInput = window.prompt(prompt);
+            pyodideWorker.postMessage({ type: 'input_response', value: userInput });
+            break;
 
-    // Override prompt() for input()
-    pyodide.globals.set("js_prompt", window.prompt.bind(window));
-    pyodide.runPythonAsync(`
-    import builtins
-    builtins.input = lambda prompt='': js_prompt(prompt)
-  `);
+        case 'stdout':
+        case 'stderr':
+            outputEl.value += data;
+            outputEl.scrollTop = outputEl.scrollHeight; // Auto-scroll
+            break;
 
-    // Multithreading support using JS web workers
-    self.onmessage = async(event_obj) => {
-        const {codeEl} = event_obj.data;
-        importScripts("https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js");
-        const pyodide = await loadPyodide();
-        try {
-            const result = await pyodide.runPythonAsync(codeEl);
-            self.postMessage({result});
-        } catch(err) {
-            self.postMessage({error: err.message})
-        }
-    };
-    
-    addToOutput("Ready!");
-    return pyodide;
-});
+        case 'ready':
+            runBtn.disabled = false;
+            runBtn.textContent = 'Run Code';
+            break;
 
-runBtn.addEventListener("click", async () => {
-    let pyodide = await pyodideReadyPromise;
-    try {
-        await pyodide.runPythonAsync(codeEl.value);
-    } catch (err) {
-        addToOutput("Error: " + err);
+        case 'done':
+            outputEl.value += '\n\n✅ Script Finished.';
+            runBtn.disabled = false;
+            runBtn.textContent = 'Run Code';
+            outputEl.scrollTop = outputEl.scrollHeight;
+            break;
+            
+        case 'error':
+            outputEl.value += `\n\n❌ PYTHON ERROR: ${data}`;
+            runBtn.disabled = false;
+            runBtn.textContent = 'Run Code';
+            outputEl.scrollTop = outputEl.scrollHeight;
+            break;
     }
+};
+
+runBtn.addEventListener('click', () => {
+    runBtn.disabled = true;
+    runBtn.textContent = 'Running...';
+    outputEl.value = ''; // Clear previous output
+
+    const originalCode = codeEl.value;
+    const modifiedCode = originalCode.replace(/\binput\s*\(/g, "await async_input(");
+
+    pyodideWorker.postMessage({ pythonCode: modifiedCode });
 });
